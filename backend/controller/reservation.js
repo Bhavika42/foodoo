@@ -1,38 +1,30 @@
-import mongoose from "mongoose";
-import validator from "validator";
+import ErrorHandler from "../middlewares/error.js";
+import { Reservation } from "../models/reservation.js";
 
-const reservationSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: true,
-    minLength: [3, "First name must be of at least 3 Characters."],
-    maxLength: [30, "First name cannot exceed 30 Characters."],
-  },
-  lastName: {
-    type: String,
-    required: true,
-    minLength: [3, "Last name must be of at least 3 Characters."],
-    maxLength: [30, "Last name cannot exceed 30 Characters."],
-  },
-  date: {
-    type: String,
-    required: true,
-  },
-  time: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    validate: [validator.isEmail, "Provide a valid email"],
-  },
-  phone: {
-    type: String,
-    required: true,
-    minLength: [11, "Phone number must contain 11 Digits."],
-    maxLength: [11, "Phone number must contain 11 Digits."],
-  },
-});
 
-export const Reservation = mongoose.model("Reservation", reservationSchema);
+const send_reservation = async (req, res, next) => {
+  const { firstName, lastName, email, date, time, phone } = req.body;
+  if (!firstName || !lastName || !email || !date || !time || !phone) {
+    return next(new ErrorHandler("Please Fill Full Reservation Form!", 400));
+  }
+
+  try {
+    await Reservation.create({ firstName, lastName, email, date, time, phone });
+    res.status(201).json({
+      success: true,
+      message: "Reservation Sent Successfully!",
+    });
+  } catch (error) {
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return next(new ErrorHandler(validationErrors.join(', '), 400));
+    }
+
+    // Handle other errors
+    return next(error);
+  }
+};
+
+
+export default send_reservation;
