@@ -1,4 +1,6 @@
 🍽️ foodoo
+
+
 foodoo is a full-stack web application designed to streamline food ordering and delivery. With a modern tech stack and intuitive user interface, foodoo offers a seamless experience for both customers and administrators.
 
 📂 Project Structure
